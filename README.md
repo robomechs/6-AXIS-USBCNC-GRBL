@@ -23,3 +23,15 @@ Some of them:
 
 Before homing "error:7" appears 2 times due to startup blocks are empty. It's ok.
 To eliminate this: set the startup blocks or comment definition in config.h
+
+## Get started
+- install Atollic truestudio
+- add this priject to Atollic
+- configure grbl in config.h (optional. 4axis by default)
+- compille it
+- use [st-link v2]() for downloading firmware to [bluepill]()
+- configure grbl with $..= commands (optional)
+- use grbl controller with [UGS](https://winder.github.io/ugs_website/), [GcodeSender
+](https://github.com/OttoHermansson/GcodeSender/downloads), [OpenCNCPilot
+](https://github.com/martin2250/OpenCNCPilot) or other interfaces
+- you can also use UART (TX1, RX1) instead of USB to connect grbl controller via bluetooth and use with android app ["Grbl Controller"](https://play.google.com/store/apps/details?id=in.co.gorest.grblcontroller&hl=ru). Just #undef USEUSB in main.c after #include «grbl.h» or delete "USEUSB" in project properties -> C/C++ General -> Path and Symbols -> Symbols.

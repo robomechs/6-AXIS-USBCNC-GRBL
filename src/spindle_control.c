@@ -55,18 +55,21 @@ void spindle_init()
 
   #endif
 #endif
+
 #if defined (STM32F103C8)
 	GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_APB2PeriphClockCmd(RCC_SPINDLE_ENABLE_PORT, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_SPINDLE_ENABLE_PORT, ENABLE); // there is no RCC_SPINDLE_DIRECTION_PORT defined!
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-#ifdef USE_SPINDLE_DIR_AS_ENABLE_PIN
-  GPIO_InitStructure.GPIO_Pin = 1 << SPINDLE_ENABLE_BIT;
-#else
-  GPIO_InitStructure.GPIO_Pin = 1 << SPINDLE_DIRECTION_BIT;
-#endif
-  GPIO_Init(SPINDLE_ENABLE_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = 1 << SPINDLE_DIRECTION_BIT;
+	GPIO_Init(SPINDLE_DIRECTION_PORT, &GPIO_InitStructure);
 
+#ifdef USE_SPINDLE_ENABLE_PIN
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Pin = 1 << SPINDLE_ENABLE_BIT;
+	GPIO_Init(SPINDLE_ENABLE_PORT, &GPIO_InitStructure);
+#endif
 
 #ifdef VARIABLE_SPINDLE
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
@@ -96,8 +99,6 @@ void spindle_init()
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_InitStructure.GPIO_Pin = 1 << SPINDLE_PWM_BIT;
   GPIO_Init(SPINDLE_PWM_PORT, &GPIO_InitStructure);
-
-
 #endif
 #endif
 
@@ -108,16 +109,12 @@ void spindle_init()
 uint8_t spindle_get_state()
 {
   uint8_t pin = 0;
+#ifdef AVRTARGET
 	#ifdef VARIABLE_SPINDLE
     #ifdef USE_SPINDLE_DIR_AS_ENABLE_PIN
-#ifdef AVRTARGET
   pin = SPINDLE_ENABLE_PORT;
-#endif
-#if defined (STM32F103C8)
-  pin = GPIO_ReadInputData(SPINDLE_ENABLE_PORT);
-#endif
 		  // No spindle direction output pin. 
-			#ifdef INVERT_SPINDLE_ENABLE_PIN
+		#ifdef INVERT_SPINDLE_ENABLE_PIN
 			  if (bit_isfalse(pin,(1<<SPINDLE_ENABLE_BIT))) { return(SPINDLE_STATE_CW); }
 	    #else
 	 			if (bit_istrue(pin,(1<<SPINDLE_ENABLE_BIT))) { return(SPINDLE_STATE_CW); }
@@ -136,12 +133,7 @@ uint8_t spindle_get_state()
       }
     #endif
 	#else
-#ifdef AVRTARGET
   pin = SPINDLE_ENABLE_PORT;
-#endif
-#if defined (STM32F103C8)
-  pin = GPIO_ReadInputData(SPINDLE_ENABLE_PORT);
-#endif
 		#ifdef INVERT_SPINDLE_ENABLE_PIN
 		  if (bit_isfalse(pin,(1<<SPINDLE_ENABLE_BIT))) {
 		#else
@@ -151,7 +143,26 @@ uint8_t spindle_get_state()
 		  else { return(SPINDLE_STATE_CW); }
 		}
 	#endif
-	return(SPINDLE_STATE_DISABLE);
+#endif
+
+#if defined (STM32F103C8)
+  pin = GPIO_ReadInputData(SPINDLE_ENABLE_PORT);
+	#ifdef USE_SPINDLE_ENABLE_PIN
+		#ifdef INVERT_SPINDLE_ENABLE_PIN
+		  if (bit_isfalse(pin,(1<<SPINDLE_ENABLE_BIT)))
+		#else
+		  if (bit_istrue(pin,(1<<SPINDLE_ENABLE_BIT)))
+		#endif
+		{
+		  if (pin & (1 << SPINDLE_DIRECTION_BIT)) { return(SPINDLE_STATE_CCW); }
+		  else { return(SPINDLE_STATE_CW); }
+		} else { return(SPINDLE_STATE_DISABLE); }
+	#elif defined(VARIABLE_SPINDLE)
+		  if (spindle_compute_pwm_value(gc_state.spindle_speed) == SPINDLE_PWM_OFF_VALUE){return(SPINDLE_STATE_DISABLE);}
+	#endif
+		  if (pin & (1 << SPINDLE_DIRECTION_BIT)) { return(SPINDLE_STATE_CCW); }
+		  else { return(SPINDLE_STATE_CW); }
+#endif
 }
 
 
@@ -160,14 +171,9 @@ uint8_t spindle_get_state()
 // Called by spindle_init(), spindle_set_speed(), spindle_set_state(), and mc_reset().
 void spindle_stop()
 {
-#ifdef VARIABLE_SPINDLE
 #ifdef AVRTARGET
+#ifdef VARIABLE_SPINDLE
     SPINDLE_TCCRA_REGISTER &= ~(1<<SPINDLE_COMB_BIT); // Disable PWM. Output voltage is zero.
-#endif
-#if defined (STM32F103C8)
-    TIM_CtrlPWMOutputs(TIM1, DISABLE);
-#endif
-
     #ifdef USE_SPINDLE_DIR_AS_ENABLE_PIN
       #ifdef INVERT_SPINDLE_ENABLE_PIN
         SetSpindleEnablebit();
@@ -180,6 +186,20 @@ void spindle_stop()
       SetSpindleEnablebit();
     #else
       ResetSpindleEnablebit();
+    #endif
+#endif
+#endif
+
+#if defined (STM32F103C8)
+	#ifdef VARIABLE_SPINDLE
+    TIM_CtrlPWMOutputs(TIM1, DISABLE);
+	#endif
+    #ifdef USE_SPINDLE_ENABLE_PIN
+      #ifdef INVERT_SPINDLE_ENABLE_PIN
+        SetSpindleEnablebit();
+      #else
+        ResetSpindleEnablebit();
+      #endif
     #endif
 #endif
 }
@@ -206,10 +226,12 @@ void spindle_stop()
 				#if defined (STM32F103C8)
 						TIM_CtrlPWMOutputs(TIM1, ENABLE);
 				#endif
-				#ifdef INVERT_SPINDLE_ENABLE_PIN
+				#ifdef USE_SPINDLE_ENABLE_PIN
+				  #ifdef INVERT_SPINDLE_ENABLE_PIN
 					ResetSpindleEnablebit();
-				#else
+				  #else
 					SetSpindleEnablebit();
+				  #endif
 				#endif
 		 }
 		#else
@@ -331,7 +353,7 @@ void spindle_stop()
     spindle_stop();
   
   } else {
-    #ifndef USE_SPINDLE_DIR_AS_ENABLE_PIN
+    #if !(defined(AVRTARGET) && defined(USE_SPINDLE_DIR_AS_ENABLE_PIN))
       if (state == SPINDLE_ENABLE_CW) {
         ResetSpindleDirectionBit();
 	  }
@@ -346,7 +368,8 @@ void spindle_stop()
         if (state == SPINDLE_ENABLE_CCW) { rpm = 0.0f; } // TODO: May need to be rpm_min*(100/MAX_SPINDLE_SPEED_OVERRIDE);
       }
     spindle_set_speed(spindle_compute_pwm_value(rpm));
-		#endif
+	#endif
+	#ifdef AVRTARGET
     #if (defined(USE_SPINDLE_DIR_AS_ENABLE_PIN) && \
         !defined(SPINDLE_ENABLE_OFF_WITH_ZERO_SPEED)) || !defined(VARIABLE_SPINDLE)
       // NOTE: Without variable spindle, the enable bit should just turn on or off, regardless
@@ -356,7 +379,19 @@ void spindle_stop()
       #else
         SetSpindleEnablebit();
       #endif    
-    #endif
+	#endif
+	#endif
+
+	#if defined (STM32F103C8)
+#if (defined(USE_SPINDLE_ENABLE_PIN) && \
+        !defined(SPINDLE_ENABLE_OFF_WITH_ZERO_SPEED)) || !defined(VARIABLE_SPINDLE)
+	  #ifdef INVERT_SPINDLE_ENABLE_PIN
+		ResetSpindleEnablebit();
+	  #else
+		SetSpindleEnablebit();
+	  #endif
+	#endif
+	#endif
   }
   
   sys.report_ovr_counter = 0; // Set to report change immediately

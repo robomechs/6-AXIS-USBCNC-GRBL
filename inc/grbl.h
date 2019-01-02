@@ -123,8 +123,14 @@ typedef int bool;
 //  #error "USE_SPINDLE_DIR_AS_ENABLE_PIN may only be used with a 328p processor"
 #endif
 
+#ifdef AVRTARGET
 #if !defined(USE_SPINDLE_DIR_AS_ENABLE_PIN) && defined(SPINDLE_ENABLE_OFF_WITH_ZERO_SPEED)
 	#error "SPINDLE_ENABLE_OFF_WITH_ZERO_SPEED may only be used with USE_SPINDLE_DIR_AS_ENABLE_PIN enabled"
+#endif
+#endif
+
+#if defined(STM32F103C8) && defined(USE_SPINDLE_DIR_AS_ENABLE_PIN)
+  #error "USE_SPINDLE_DIR_AS_ENABLE_PIN may only be used with AVRTARGET config"
 #endif
 
 #if defined(PARKING_ENABLE)

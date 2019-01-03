@@ -27,10 +27,10 @@ To eliminate this: set the startup blocks or comment definition in config.h
 ## Get started
 - install Atollic truestudio
 - add this project to Atollic
-- configure grbl in config.h (optional. 4axis by default)
+- configure grbl with config.h (optional. 4 axis by default. You can't change it through the grbl interface) and default.h(you can change this settings later throught the grbl interface)
 - compille it
 - use [st-link v2](https://www.st.com/content/st_com/en/products/development-tools/hardware-development-tools/development-tool-hardware-for-mcus/debug-hardware-for-mcus/debug-hardware-for-stm32-mcus/st-link-v2.html#design-scroll) or China clones for downloading firmware to [bluepill](http://wiki.stm32duino.com/index.php?title=Blue_Pill)
-- configure grbl with $..= commands (optional)
+- configure grbl with "$x=val" commands (optional)
 - use grbl controller with [UGS](https://winder.github.io/ugs_website/), [GcodeSender
 ](https://github.com/OttoHermansson/GcodeSender/downloads), [OpenCNCPilot
 ](https://github.com/martin2250/OpenCNCPilot) or other interfaces

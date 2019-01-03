@@ -35,3 +35,4 @@ To eliminate this: set the startup blocks or comment definition in config.h
 ](https://github.com/OttoHermansson/GcodeSender/downloads), [OpenCNCPilot
 ](https://github.com/martin2250/OpenCNCPilot) or other interfaces
 - you can also use UART (TX1, RX1) instead of USB to connect grbl controller via bluetooth and use with android app ["Grbl Controller"](https://play.google.com/store/apps/details?id=in.co.gorest.grblcontroller&hl=ru). Just #undef USEUSB in main.c after #include «grbl.h» or delete "USEUSB" in project properties -> C/C++ General -> Path and Symbols -> Symbols.
+- If you want to use UART and more then 4 axis, you can map "B" axis Step and Dir outputs to PA11,12 instead of PA9,10 (see cpu-map.h)

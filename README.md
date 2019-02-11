@@ -1,6 +1,6 @@
-# 6-AXIS-USBCNC-GRBL
+# up to 6-AXIS-USBCNC-GRBL
 This repository is based on [usbcnc grbl](https://github.com/usbcnc/grbl) which in turn is based on [native grbl 1.1f](https://github.com/gnea/grbl)<br>
-With 6-AXIS-USBCNC-GRBL you can use 3,4,5 or 6 axis depend on definition in config.h
+With 6-AXIS-USBCNC-GRBL you can use 3,4(default),5 or 6 axis depend on definition in config.h
 <img width="842" alt="stm32f103-usbcnc-pinout" src="https://user-images.githubusercontent.com/8062959/50537633-57946b80-0b73-11e9-92f8-e4ee15e2e923.png"><br>
 Also there are some bugs (from usbcnc grbl) were fixed and some improvements were done.
 Some of them:

@@ -68,6 +68,7 @@ void limits_init()
 
 	if (bit_istrue(settings.flags, BITFLAG_HARD_LIMIT_ENABLE))
 	{
+		delay_ms(100); // added by MS for debug (issue#14)
 		GPIO_EXTILineConfig(GPIO_LIMIT_PORT, X_LIMIT_BIT);
 		GPIO_EXTILineConfig(GPIO_LIMIT_PORT, Y_LIMIT_BIT);
 		GPIO_EXTILineConfig(GPIO_LIMIT_PORT, Z_LIMIT_BIT);

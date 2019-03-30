@@ -14,7 +14,7 @@
 * CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
 *******************************************************************************/
-#ifdef USEUSB
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
 #include "usb_lib.h"
@@ -151,6 +151,7 @@ void SysTick_Handler(void)
 /*            STM32F10x Peripherals Interrupt Handlers                        */
 /******************************************************************************/
 
+#ifdef USEUSB
 #ifndef STM32F10X_CL
 /*******************************************************************************
 * Function Name  : USB_LP_CAN1_RX0_IRQHandler

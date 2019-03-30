@@ -58,7 +58,11 @@ void limits_init()
 	GPIO_InitTypeDef GPIO_InitStructure;
 	RCC_APB2PeriphClockCmd(RCC_LIMIT_PORT | RCC_APB2Periph_AFIO, ENABLE);
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+#ifdef DISABLE_LIMIT_PIN_PULL_UP
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+#else
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+#endif
 	GPIO_InitStructure.GPIO_Pin = LIMIT_MASK;
 	GPIO_Init(LIMIT_PORT, &GPIO_InitStructure);
 
